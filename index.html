@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Netflix Dataset — Real Data Analysis</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+:root{{--bg:#0d0d14;--card:#13131e;--brd:#252535;--red:#e50914;--teal:#00d4aa;
+       --purp:#7c6aff;--org:#ff6b35;--yel:#f5c518;--mute:#8888aa;--text:#e8e8f0}}
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;padding-bottom:60px}}
+
+.hdr{{padding:52px 56px 44px;border-bottom:1px solid var(--brd);
+       background:linear-gradient(135deg,#0d0d14 0%,#180a10 100%);position:relative;overflow:hidden}}
+.hdr::after{{content:'';position:absolute;top:-80px;right:-80px;width:420px;height:420px;
+              background:radial-gradient(circle,rgba(229,9,20,.13) 0%,transparent 68%);pointer-events:none}}
+.tag{{font-family:'Space Mono',monospace;font-size:11px;color:var(--red);letter-spacing:3px;
+       text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}}
+.tag::before{{content:'▶';font-size:8px}}
+h1{{font-family:'Bebas Neue',sans-serif;font-size:clamp(50px,7vw,86px);line-height:.93;
+     letter-spacing:2px;margin-bottom:14px}}
+h1 span{{color:var(--red)}}
+.hdr-sub{{color:var(--mute);font-size:14px;max-width:600px;line-height:1.75;margin-bottom:32px}}
+.kpis{{display:flex;gap:48px;flex-wrap:wrap}}
+.kpi{{display:flex;flex-direction:column;gap:4px}}
+.kpi-n{{font-family:'Bebas Neue',sans-serif;font-size:40px;line-height:1}}
+.kpi-n span{{color:var(--red);font-size:24px}}
+.kpi-l{{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);letter-spacing:2px;text-transform:uppercase}}
+
+.nav{{display:flex;gap:0;padding:0 56px;background:#0f0f18;border-bottom:1px solid var(--brd);
+       position:sticky;top:0;z-index:100;overflow-x:auto;scrollbar-width:thin}}
+.nav a{{padding:15px 20px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1.5px;
+         text-transform:uppercase;color:var(--mute);text-decoration:none;border-bottom:2px solid transparent;
+         white-space:nowrap;transition:all .2s}}
+.nav a:hover{{color:var(--text)}} .nav a.active{{color:var(--red);border-bottom-color:var(--red)}}
+
+main{{padding:44px 56px}}
+section{{margin-bottom:56px}}
+.sec-hdr{{display:flex;align-items:center;gap:16px;margin-bottom:28px}}
+.qbadge{{font-family:'Bebas Neue',sans-serif;font-size:14px;padding:4px 14px;
+          background:rgba(229,9,20,.2);color:var(--red);border:1px solid rgba(229,9,20,.35);border-radius:3px;
+          letter-spacing:2px;flex-shrink:0}}
+.sec-title{{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:2px}}
+.sec-line{{flex:1;height:1px;background:var(--brd)}}
+.sec-note{{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);letter-spacing:1px;flex-shrink:0}}
+
+.insight{{background:var(--card);border:1px solid var(--brd);border-left:3px solid var(--red);
+           border-radius:4px;padding:16px 20px;margin-bottom:20px;display:flex;gap:14px;align-items:flex-start}}
+.insight-icon{{font-size:20px;flex-shrink:0;margin-top:2px}}
+.insight-text{{font-size:13.5px;color:var(--text);line-height:1.7}}
+.insight-text strong{{color:var(--yel)}}
+
+.chart-wrap{{background:var(--card);border:1px solid var(--brd);border-radius:4px;
+              padding:24px;margin-bottom:24px;text-align:center}}
+.chart-wrap img{{max-width:100%;border-radius:3px}}
+
+.tbl-wrap{{background:var(--card);border:1px solid var(--brd);border-radius:4px;
+            overflow:hidden;margin-bottom:24px}}
+table{{width:100%;border-collapse:collapse;font-size:13px}}
+thead tr{{background:#1a1a28}}
+th{{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;
+     color:var(--mute);padding:12px 16px;text-align:left;border-bottom:1px solid var(--brd)}}
+td{{padding:11px 16px;border-bottom:1px solid #1c1c28;vertical-align:middle}}
+tr:last-child td{{border-bottom:none}} tr:hover td{{background:#1a1a26}}
+
+.grid2{{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}}
+.mini-card{{background:var(--card);border:1px solid var(--brd);border-radius:4px;padding:20px}}
+.mini-label{{font-family:'Space Mono',monospace;font-size:10px;color:var(--mute);letter-spacing:2px;
+              text-transform:uppercase;margin-bottom:8px}}
+.mini-val{{font-family:'Bebas Neue',sans-serif;font-size:38px;line-height:1;margin-bottom:4px}}
+.mini-sub{{font-size:12px;color:var(--mute)}}
+
+@media(max-width:768px){{main,.hdr,.nav{{padding-left:16px;padding-right:16px}}.grid2{{grid-template-columns:1fr}}}}
+</style>
+</head>
+<body>
+
+<header class="hdr">
+  <div class="tag">Netflix Dataset · Real Data Analysis · DIT323</div>
+  <h1>NETFLIX<br><span>DATA</span> INSIGHTS</h1>
+  <p class="hdr-sub">
+    วิเคราะห์จาก dataset จริง 7,789 titles ตอบ 4 คำถาม:<br>
+    ประเทศยอดนิยม · Director เยอะสุด · Genre ยอดนิยม · เรื่องย่อ (Sentiment)
+  </p>
+  <div class="kpis">
+    <div class="kpi"><div class="kpi-n">7<span>,789</span></div><div class="kpi-l">Total Titles</div></div>
+    <div class="kpi"><div class="kpi-n">748</div><div class="kpi-l">Directors</div></div>
+    <div class="kpi"><div class="kpi-n">42</div><div class="kpi-l">Unique Genres</div></div>
+    <div class="kpi"><div class="kpi-n">85</div><div class="kpi-l">Countries</div></div>
+  </div>
+</header>
+
+<nav class="nav">
+  <a href="#q1" class="active">🌍 Q1 ประเทศ</a>
+  <a href="#q2">🎬 Q2 Director</a>
+  <a href="#q3">🎭 Q3 ประเภท</a>
+  <a href="#q4">📝 Q4 เรื่องย่อ</a>
+</nav>
+
+<main>
+
+<!-- ══ Q1 ══ -->
+<section id="q1">
+  <div class="sec-hdr">
+    <span class="qbadge">Q 1</span>
+    <div class="sec-title">ประเทศที่มีเนื้อหาบน Netflix มากที่สุด</div>
+    <div class="sec-line"></div>
+    <div class="sec-note">country · {df_countries['Country'].count():,} records</div>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card" style="border-top:3px solid {RED}">
+      <div class="mini-label">อันดับ 1</div>
+      <div class="mini-val" style="color:{RED}">USA</div>
+      <div class="mini-sub">🇺🇸 United States — 3,298 titles (42.3% ของทั้งหมด)</div>
+    </div>
+    <div class="mini-card" style="border-top:3px solid {TEAL}">
+      <div class="mini-label">อันดับ 2</div>
+      <div class="mini-val" style="color:{TEAL}">India</div>
+      <div class="mini-sub">🇮🇳 India — 990 titles (12.7%) อันดับ 2 ห่าง USA มาก</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-icon">💡</div>
+    <div class="insight-text">
+      <strong>United States</strong> ครองอันดับ 1 อย่างขาดลอยด้วย <strong>3,298 titles (42.3%)</strong> — มากกว่าอันดับ 2 (India 990) ถึง 3 เท่า
+      อันดับ 3 คือ <strong>United Kingdom</strong> (723 titles) ตามด้วย Canada, France, Japan
+      แสดงให้เห็นว่า Netflix เป็น platform ที่ content อเมริกันยังครองตลาดสูงสุด
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <img src="data:image/png;base64,{plot1_b64}" alt="Country Analysis">
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Flag</th><th>Country</th><th>Titles</th><th>%</th><th>Proportion</th></tr></thead>
+      <tbody>{country_html}</tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══ Q2 ══ -->
+<section id="q2">
+  <div class="sec-hdr">
+    <span class="qbadge">Q 2</span>
+    <div class="sec-title">Director ที่สร้างผลงานมากที่สุด</div>
+    <div class="sec-line"></div>
+    <div class="sec-note">{len(dir_df['Director'].dropna().unique()):,} unique directors</div>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card" style="border-top:3px solid {PURP}">
+      <div class="mini-label">Most Prolific Director</div>
+      <div class="mini-val" style="color:{PURP}">18</div>
+      <div class="mini-sub">Raúl Campos & Jan Suter — 18 Stand-Up Comedy titles</div>
+    </div>
+    <div class="mini-card" style="border-top:3px solid {RED}">
+      <div class="mini-label">Most Famous</div>
+      <div class="mini-val" style="color:{RED}">12</div>
+      <div class="mini-sub">Martin Scorsese & Youssef Chahine — 12 titles each</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-icon">🎬</div>
+    <div class="insight-text">
+      <strong>Raúl Campos & Jan Suter</strong> สร้างผลงานมากที่สุด <strong>18 titles</strong> ทั้งหมดเป็น Stand-Up Comedy Latin America
+      ในบรรดา Hollywood directors ที่มีชื่อเสียง <strong>Martin Scorsese</strong> และ <strong>Steven Spielberg</strong> มีผลงานบน Netflix
+      12 และ 10 เรื่องตามลำดับ — Scorsese มี Avg Polarity สูงกว่า (เรื่องย่อเชิงบวกกว่า)
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <img src="data:image/png;base64,{plot2_b64}" alt="Director Analysis">
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Director</th><th>Titles</th><th>Category</th><th>Avg Polarity</th><th>Sample Titles</th></tr></thead>
+      <tbody>{dir_html}</tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══ Q3 ══ -->
+<section id="q3">
+  <div class="sec-hdr">
+    <span class="qbadge">Q 3</span>
+    <div class="sec-title">ประเภทหนัง (Genre/Type) ที่ได้รับความนิยม</div>
+    <div class="sec-line"></div>
+    <div class="sec-note">42 unique genres · exploded from Type column</div>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card" style="border-top:3px solid {ORG}">
+      <div class="mini-label">อันดับ 1 Genre</div>
+      <div class="mini-val" style="color:{ORG}">2,437</div>
+      <div class="mini-sub">International Movies — พบใน 31% ของ titles ทั้งหมด</div>
+    </div>
+    <div class="mini-card" style="border-top:3px solid {TEAL}">
+      <div class="mini-label">อันดับ 2 Genre</div>
+      <div class="mini-val" style="color:{TEAL}">2,108</div>
+      <div class="mini-sub">Dramas — ประเภทที่ได้รับความนิยมสูงสุดในฐานะ Pure Genre</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-icon">🎭</div>
+    <div class="insight-text">
+      <strong>International Movies</strong> อยู่อันดับ 1 (2,437 titles) สะท้อนว่า Netflix มีเนื้อหาต่างประเทศจำนวนมาก
+      <strong>Dramas</strong> อันดับ 2 (2,108) และ <strong>Comedies</strong> อันดับ 3 (1,472)
+      หมวด <strong>Documentaries</strong> (786) และ <strong>Stand-Up Comedy</strong> (321) ก็ได้รับความนิยมสูง
+      เรื่องย่อของ Documentaries มีโทน Positive สูงสุด ส่วน Thrillers/Crime มีโทน Negative
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <img src="data:image/png;base64,{plot3_b64}" alt="Genre Analysis">
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Genre/Type</th><th>Count</th><th>% of Total</th><th>% Positive Desc</th></tr></thead>
+      <tbody>{genre_html}</tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══ Q4 ══ -->
+<section id="q4">
+  <div class="sec-hdr">
+    <span class="qbadge">Q 4</span>
+    <div class="sec-title">วิเคราะห์ Description — เรื่องย่อเป็นยังไง?</div>
+    <div class="sec-line"></div>
+    <div class="sec-note">TextBlob Sentiment · {len(df):,} descriptions</div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-icon">📝</div>
+    <div class="insight-text">
+      จากการวิเคราะห์ <strong>{len(df):,} เรื่องย่อ</strong> ด้วย TextBlob Sentiment Analysis พบว่า
+      <strong style="color:{TEAL}">45.8% มีโทน Positive</strong> — เรื่องย่อมักใช้คำว่า <em>love, family, young, friends, hope</em>
+      <strong style="color:{ORG}">29.0% เป็น Neutral</strong> — บรรยายข้อเท็จจริง เช่น Documentary และ Series
+      <strong style="color:{RED}">25.2% มีโทน Negative</strong> — เรื่องย่อมักมีความขัดแย้ง ความกลัว และความมืด
+      ความยาวหนังเฉลี่ยอยู่ที่ <strong>99 นาที</strong> และ TV Show ส่วนใหญ่มีเพียง <strong>1 Season</strong> (66.7%)
+    </div>
+  </div>
+
+  <div class="chart-wrap">
+    <img src="data:image/png;base64,{plot4_b64}" alt="Description Analysis">
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Sentiment</th><th>Count</th><th>%</th><th>Polarity Range</th><th>ลักษณะเรื่องย่อ</th></tr></thead>
+      <tbody>{sent_html}</tbody>
+    </table>
+  </div>
+
+  <div style="margin-top:8px;margin-bottom:8px">
+    <div class="sec-title" style="font-size:20px;margin-bottom:16px">ตัวอย่าง 8 Titles จาก Dataset จริง</div>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Title</th><th>Category</th><th>Genre</th><th>Sentiment</th><th>Polarity</th><th>Description</th></tr></thead>
+      <tbody>{sample_html_rows}</tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<script>
+const secs = document.querySelectorAll('section');
+const links = document.querySelectorAll('.nav a');
+window.addEventListener('scroll', () => {{
+  let cur = '';
+  secs.forEach(s => {{ if (window.scrollY >= s.offsetTop - 130) cur = s.id; }});
+  links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#'+cur));
+}});
+</script>
+</body>
+</html>
